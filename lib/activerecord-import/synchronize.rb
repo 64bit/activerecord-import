@@ -55,5 +55,18 @@ module ActiveRecord # :nodoc:
     def synchronize(instances, key=[ActiveRecord::Base.primary_key])
       self.class.synchronize(instances, key)
     end
+
+    def self.synchronize_id_pk(instances)
+      return if instances.empty?
+     
+      last_insert_id = ActiveRecord::Base.connection.execute("select LAST_INSERT_ID();").entries[0][0].to_i;
+      
+      instances.each do |i|
+        i.id = last_insert_id
+        last_insert_id += 1
+      end
+        
+    end
+
   end
 end

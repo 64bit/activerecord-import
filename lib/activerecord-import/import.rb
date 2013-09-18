@@ -1,4 +1,5 @@
 require "ostruct"
+require "observer"
 
 module ActiveRecord::Import::ConnectionAdapters ; end
 
@@ -27,6 +28,7 @@ end
 
 class ActiveRecord::Base
   class << self
+  include Observable
 
     # use tz as set in ActiveRecord::Base
     tproc = lambda do
@@ -226,6 +228,13 @@ class ActiveRecord::Base
         sync_keys = options[:synchronize_keys] || [self.primary_key]
         synchronize( options[:synchronize], sync_keys)
       end
+      
+      synchronize_id_pk( models ) if options[:synchronize_id_pk] 
+      
+      if ActiveRecord::Import.get_models_for_notification.include? model_name.constantize 
+        changed  
+        notify_observers({ :models => models }) 
+      end
 
       return_obj.num_inserts = 0 if return_obj.num_inserts.nil?
       return_obj
@@ -313,6 +322,8 @@ class ActiveRecord::Base
                                                   values_sql,
                                                   "#{self.class.name} Create Many Without Validations Or Callbacks" )
       end
+      
+      
       number_inserted
     end
 

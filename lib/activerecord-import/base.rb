@@ -4,7 +4,23 @@ require "active_record/version"
 
 module ActiveRecord::Import
   AdapterPath = File.join File.expand_path(File.dirname(__FILE__)), "/active_record/adapters"
+ 
+  @@models_for_notification= [] 
 
+  def self.set_models_for_notification models 
+    unless models.nil?
+      models.each do |m|
+        unless @@models_for_notification.include? m
+          @@models_for_notification << m
+        end
+      end
+    end
+  end  
+  
+  def self.get_models_for_notification
+    @@models_for_notification
+  end
+  
   def self.base_adapter(adapter)
     case adapter
     when 'mysqlspatial' then 'mysql'
